@@ -1,6 +1,8 @@
 // Use DBML to define your database structure
 // Docs: https://dbml.dbdiagram.io/docs
-
+// master-slave replication, user.id sync-async,3 replicas
+// master-slave replication, post.id,created_at sync-async,3 replicas
+// master-slave replication, message.id,async created_at,3 replicas
 Table follows {
   following_user_id integer
   followed_user_id integer
