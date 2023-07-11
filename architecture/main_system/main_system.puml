@@ -1,0 +1,48 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+Container(loadBalancer, "Load Balancer", "", "Uses round robin")
+Container(notificationSystem, "Notification system", "Software system", "Notifies online clients about new posts, messages")
+ContainerQueue(messageQueue, "Message queue", "Kafka", "")
+
+System_Boundary(mainSystem, "Main system") {
+    Container(cdn, "CDN", "Stores images, videos")
+    Container(userService, "User Service", "", "Handles creating new user relationships, adds new users,gets user profile")
+    ContainerDb(userObjectStorage, "User object storage", "AWS S3", "Stores images,videos")
+    ContainerDb(userDb, "User database", "Postgres", "Stores user information")
+    Container(postCommentService, "Post,comment Service", "", "Handles user posts and comments, gets user posts first time")
+    ContainerDb(postCommentObjectStorage, "Post,comment object storage", "AWS S3", "Stores images,videos")
+    ContainerDb(postCommentDb, "Post,comment database", "Postgres", "Stores post information")
+    Container(chatService, "Chat Service", "", "Handles chat user messages, gets message history first time")
+    ContainerDb(chatDb, "Chat database", "Postgres", "Stores chat messages")
+    Container(userGraphService, "User graph Service", "", "Handles user connections")
+    ContainerDb(userGraphDb, "User graph database", "Neo4J", "Stores information about user connnections")
+    ContainerQueue(userGraphUpdateQueue, "User graph service update queue", "Kafka", "")
+    Container(metaInfoCache, "Cache for meta information", "Caches informaion about posts, comments  and user meta information")
+}
+
+BiRel(user, loadBalancer, "", "")
+BiRel(loadBalancer, notificationSystem, "")
+BiRel(loadBalancer, mainSystem, "")
+BiRel(notificationSystem, messageQueue, "")
+BiRel(cdn, postCommentService, "Stores post images,videos")
+BiRel(cdn, userService, "Stores user photos")
+Rel(userService, userObjectStorage, "")
+Rel(userService, userDb, "")
+Rel(postCommentService, postCommentObjectStorage, "")
+Rel(postCommentService, postCommentDb, "")
+Rel(chatService, chatDb, "")
+Rel(userGraphService, userGraphDb, "")
+Rel(postCommentService, userGraphService, "Gets user's friends,lovers")
+Rel(chatService, userGraphService, "Gets user's friends,lovers")
+Rel(userService, userGraphUpdateQueue, "Update user connections")
+Rel(userGraphService, userGraphUpdateQueue, "")
+BiRel(userService, metaInfoCache, "")
+BiRel(postCommentService, metaInfoCache, "")
+BiRel(chatService, metaInfoCache, "")
+Rel(chatService, messageQueue, "New posts,comments for online users")
+Rel(postCommentService, messageQueue, "New posts,comments for online users")
+
+
+@enduml

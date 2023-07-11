@@ -1,33 +1,78 @@
-  ##Design of a social network 
-https://balun.courses/courses/system_design
+ # Social network - System Design
+ 
+ Example of the homework for [System design course].
   
-### Functional requirements:
-- User is able to add/remove friends
-- User is able to like/dislike other user posts
-- User is able to publish new posts
-- User is able to comment friend's posts.
-- User is able to search posts by keywords.
-- User is able to browse the timeline with recent friend's posts.
-- Post contains only text.
+ ### Functional requirements:
 
-###Non functional requirements
-- DAU 100 000 000 unique users
-- User publishes 10 new posts per day
-- User has 30 friends
-- Post is about 2000 chars long
-- User reads friends posts 30 times per day
-- Availability is 99.95%
-- If user publishes new post,it may be shown in 1 seconds for user
-- User see his friend's post in 5 seconds
-- The system can't lose any user information
-- The system favors availability over consistency
+ - User is able to add or remove users as friends, lovers and followers
+ - User is able to publish or read posts
+ - User is able to comment only posts of his friends,lovers and followers
+ - User is able to add hashtags to own posts
+ - User is able to like or dislike posts
+ - User is able to send messages to other users if they are friends,lovers and followers 
+ - Posts may contain text, images, audio and short videos
+ - Messages may contain only text
 
-### Capacity estimation and constraints
-- Need 3650TB per 5 years to store all user posts
-- Replication factor is 3, it needs to store 10950TB
-- RPS (write) is 11574 to publish new posts
-- RPS (read) is 34722
-- Writing Bandwidth is 23Mb/sec
-- Reading bandwidth is 69Mb/sec
-- Need 3 shards.
+
+ ### Non-functional requirements:
+
+ - DAU 100 000 000 unique users
+ - Availability is 99.95%
+ - System favors availability over consistency
+ - User may publish 10 new posts,comments per day
+ - User may read posts,comments 20 times per day 
+ - User may have 200 friends,lovers and followers
+ - Message may contain 500 chars
+ - Post may contain 2000 chars
+ - Post may contain either one image,one audio or one video,
+ - Image may be 1 MB
+ - Video may be 10 MB
+ - Audio may be 200 kB
+ - If user publishes new post and comments,it will be shown for him in 3 seconds
+ - User is able to see posts of his friends,lovers and followers in 5 seconds
+ - Store user's posts,comments and messages for 5 years
+ - geo distribution is not needed
+ - No seasonality
+
+ ## Design overview
+
+ In order to design social network I've used [C4 model](https://c4model.com/). For up-front design sessions as well 
+ as for documentation of existing systems, the C4 model was created to help describe software architecture.
+ In other words, it's a way to map out your code, at various levels of detail.
+
+ <p align="center">
+    </br><b>Level 1.</b> System context diagram</br></br>
+ </p>
+
+ <p align="center">
+  <img src="images/system.png" />
+ </p>
+
+ <p align="center">
+    </br><b>Level 2.</b> Main system container diagram</br></br>
+ </p>
+ 
+ <p align="center">
+    <img src="images/main_system.png" />
+ </p>
+
+ <p align="center">
+    </br><b>Level 2.</b> Notification system container diagram</br></br>
+ </p> 
+
+ <p align="center">
+    <img src="images/notification_system.png" />
+ </p>
+
+ ## Back-of-the-envelope estimates
+
+ - RPS (write) = 1000000000 / 86400 = 11574
+ - RPS (read) = 2000000000 / 86400 = 23148 
+ - Bandwidth (write) = 100000000 * 10 * (4000 + 10000000) // 86400 = 115 GB/s
+ - Bandwidth (read) =  100000000 * 20 * (4000 + 10000000) // 86400 = 230 GB/s  
+   (Assume 1 char takes 2 bytes,we don't count replication) 
+ - Need 100000000 * 10 * (4000 + 1000000 + 10000000 + 200000 + 1000) = 11 PTB * 365 * 5 = 20075 PTB for 5 years.
+ - Assume SSD speed(writing) is 300 MB/s and it needs to support the 230 GB/s, 
+   we need to get about 1149 SSD with replication factor 3.
+
 

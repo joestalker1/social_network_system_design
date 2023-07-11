@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Social Network - OpenAPI 3.0
-  description:
+  description: Social Network API
   termsOfService: http://swagger.io/terms/
   contact:
     email: apiteam@swagger.io
@@ -13,17 +13,80 @@ externalDocs:
   description: Find out more about Swagger
   url: http://swagger.io
 servers:
-  - url: https://petstore3.swagger.io/api/v3
+  - url: https://social_network.swagger.io/api/v3
 tags:
   - name: social_network
     description: Social Networwork API
 paths:
-  /v1/user/{userId}/friend/{id}:
+  /v1/user:
+    post:
+      tags:
+        - user
+      summary: Add a user
+      description: Add a user
+      operationId: addUser
+      requestBody:
+        description: Create a new user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUser'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedUser'
+  /v1/user/{userId}:
+    get:
+      tags:
+        - user
+      summary: find a user
+      description: find a user
+      operationId: findUser
+      parameters:
+        - name: userId
+          in: path
+          description: ID of current user
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedUser'
+        '404':
+          description: user is not found
+  /v1/user/{userId}:
+    delete:
+      tags:
+        - user
+      summary: delete a user
+      description: delete a user
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          description: ID of current user
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+        '404':
+          description: user is not found
+  /v1/user/{userId}/{relationship_type}/{otherUserId}:
     post:
       tags:
         - user
       summary: Add a friend
-      description: Add a friedn to contact list
+      description: Add a friend,lover or follower
       operationId: addFriend
       parameters:
         - name: userId
@@ -32,37 +95,28 @@ paths:
           required: true
           schema:
             type: string
-      parameters:
-        - name: id
+        - name: relationship_type
           in: path
-          description: ID of user to add
+          description: lover,friend or follower
           required: true
           schema:
             type: string
-      requestBody:
-        description: Create a new contact list record
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schema/User'
-        required: true
+        - name: otherUserId
+          in: path
+          description: lover,friend or follower id
+          required: true
+          schema:
+            type: string
       responses:
         '201':
           description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/User'
         '404':
           description: user is not found
-  /v1/user/{userId}/friend/{id}:
+  /v1/user/{userId}/{relationship_type}/{otherUserId}:
     delete:
       tags:
         - user
-      summary: Delete user from user contact lis
+      summary: Delete friend,lover or follower
       operationId: deleteFriend
       parameters:
         - name: userId
@@ -73,10 +127,17 @@ paths:
           schema:
             type: string
             default: available
-      parameters:
-        - name: id
+        - name: relationship_type
           in: path
-          description: id of user is going be deleted
+          description: friend,lover or follower
+          required: true
+          explode: true
+          schema:
+            type: string
+            default: available
+        - name: otherUserId
+          in: path
+          description: friend,lover or follower id
           required: true
           explode: true
           schema:
@@ -87,39 +148,13 @@ paths:
           description: successful operation
         '404':
           description: User is not found
-  /v1/user/{userId}/friends:
-    get:
+  /v1/user/{userId}/post:
+    post:
       tags:
         - user
-      summary: Get all user friends
-      operationId: getAllFriends
-      parameters:
-        - name: userId
-          in: path
-          description: id of current user
-          required: true
-          explode: true
-          schema:
-            type: string
-            default: available
-        responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
-
-        '404':
-          description: User is not found
-  /v1/user/{userId}/profile:
-    get:
-      tags:
-        - user
-      summary: Get user profile
-      operationId: getUserProfile
+      summary: publish a post
+      description: Publish a post
+      operationId: addPost
       parameters:
         - name: userId
           in: path
@@ -127,324 +162,382 @@ paths:
           required: true
           schema:
             type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Profile'
-        '404':
-          description: User not found
-  /v1/posts
-  post:
-    tags:
-      - post
-    summary: Add new post
-    operationId: addPost
-    requestBody:
-      description: Create a new post
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schema/Post'
-      required: true
-    responses:
-      '201':
-        description: Successful operation
+      requestBody:
+        description: Create a new contact list record
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Post'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/Post'
-      '404':
-        description: user not found
-  /v1/posts/{id}/file
-  post:
-    tags:
-      - post
-    summary: Add a file to post
-    operationId: addFileToPost
-    requestBody:
-      content:
-        application/octet-stream:
+              $ref: '#/components/schemas/NewPost'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedPost'
+        '404':
+          description: user is not found
+  /v1/post/{postId}:
+    get:
+      tags:
+        - post
+      summary: get a post
+      description: get a post
+      operationId: getPost
+      parameters:
+        - name: postId
+          in: path
+          description: ID of current post
+          required: true
           schema:
             type: string
-            format: binary
-      required: true
-    responses:
-      '201':
-        description: Successful operation
-      '404':
-        description: Post not found
-  /v1/timeline/home
-get:
-  tags:
-    - timeline
-  summary: Get a home timeline
-  operationId: getHomeTimeline
-  operationId: addFileToPost
-  parameters:
-    - name: offset
-      in: query
-      description: offset to start from
-      required: true
-      explode: true
-      schema:
-        type: string
-        default: available
-    - name: limit
-      in: query
-      description: number of post to download
-      required: true
-      explode: true
-      schema:
-        type: string
-        default: available
-
-  responses:
-    '200':
-      description: Successful operation
-      content:
-        application/json:
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedPost'
+        '404':
+          description: post is not found
+  /v1/post/{postId}:
+    get:
+      tags:
+        - post
+      summary: get a post
+      description: get a post
+      operationId: getPost
+      parameters:
+        - name: postId
+          in: path
+          description: ID of current post
+          required: true
           schema:
-            $ref: '#/components/schemas/Post'
-    '404':
-      description: User not found
-  security:
-    - api_key: []
-  /v1/timeline/{userId}
-get:
-  tags:
-    - timeline
-  summary: Get a user timeline
-  operationId: getUserTimeline
-  parameters:
-    - name: offset
-      in: query
-      description: offset to start from
-      required: true
-      explode: true
-      schema:
-        type: string
-        default: available
-    - name: limit
-      in: query
-      description: number of post to download
-      required: true
-      explode: true
-      schema:
-        type: string
-        default: available
-    - name: userId
-      in: path
-      description: id of a post
-      required: true
-      explode: true
-      schema:
-        type: string
-        default: available
-  requestBody:
-    description: Get timeline
-      content:
-        application/json:
+            type: string
+        - comment_number:
+          in: query
+          description: show first number of comments
+          required: false
+          schema: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedPost'
+        '404':
+          description: post is not found
+  /v1/post/{postId}:
+    delete:
+      tags:
+        - post
+      summary: delete a post
+      description: Delete a post
+      operationId: deletePost
+      parameters:
+        - name: postId
+          in: path
+          description: ID of post
+          required: true
           schema:
-            $ref: '#/components/schemas/Post'
-    required: true
-  responses:
-    '200':
-      description: Successful operation
-      content:
-        application/json:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+        '404':
+          description: 'post is not found'
+  /v1/post/{postId}/comment:
+    post:
+      tags:
+        - post
+      summary: add a comment to a post
+      description: add a comment
+      operationId: addComment
+      parameters:
+        - name: userId
+          in: path
+          description: ID of current user
+          required: true
           schema:
-            $ref: '#/components/schemas/Post'
-    '404':
-      description: User not found
-  /v1/chat/{chatId}/messages
-get:
-  tags:
-    - chat
-  summary: Get a user chat messages
-  operationId: getUserChatMessages
-  parameters:
-    - name: chatId
-      in: path
-      description: id of a chatId
-      required: true
-      explode: true
-      schema:
-        type: string
-        default: available
-    - name: offset
-      in: query
-      description: offset to start from
-      required: true
-      explode: true
-      schema:
-        type: string
-        default: available
-    - name: limit
-      in: query
-      description: number of post to download
-      required: true
-      explode: true
-      schema:
-        type: string
-        default: available
-    - name: userId
-      in: query
-      description: id of a user
-      required: true
-      explode: true
-      schema:
-        type: string
-        default: available
-  responses:
-    '200':
-      description: Successful operation
-      content:
-        application/json:
-          type: array
+            type: string
+        - name: postId
+          in: path
+          description: ID of post
+          required: true
           schema:
-            $ref: '#/components/schemas/Message'
-    '404':
-      description: User not found
-  /v1/chat/{chatId}/messages
-post:
-  tags:
-    - chat
-  summary: Post a message
-  operationId: postChatMessages
-  parameters:
-    - name: chatId
-      in: path
-      description: id of a chatId
-      required: true
-      explode: true
-      schema:
-        type: string
-        default: available
-  requestBody:
-    description: Message
-      content:
-        application/json:
+            type: string
+      requestBody:
+        description: Create a new comment
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewComment'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedComment'
+        '404':
+          description: post is not found
+  /v1/comment/{commentId}:
+    delete:
+      tags:
+        - comment
+      summary: delete a comment
+      description: Delete a comment
+      operationId: deleteComment
+      parameters:
+        - name: commentId
+          in: path
+          description: ID of comment
+          required: true
           schema:
-            $ref: '#/components/schemas/Message'
-  responses:
-    '201':
-      description: Successful operation
-    '404':
-      description: chat not found
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+        '404':
+          description: comment is not found
+  /v1/comment/{postId}:
+    get:
+      tags:
+        - comment
+      summary: delete a comment
+      description: get a comment
+      operationId: getComment
+      parameters:
+        - name: postId
+          in: path
+          description: ID of post
+          required: true
+          schema:
+            type: string
+        - name: offset
+          in: query
+          description: start from comment
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: comment number to show
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedComment'
+        '404':
+          description: post is not found
+  /v1/chat/{userId}/{toUserId}:
+    post:
+      tags:
+        - post
+      summary: send a message
+      description: send a message
+      operationId: sendMessage
+      parameters:
+        - name: userId
+          in: path
+          description: ID of current user
+          required: true
+          schema:
+            type: string
+        - name: toUserId
+          in: path
+          description: ID of user
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Send a message
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewMessage'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedMessage'
+        '404':
+          description: user is not found
+  /v1/chat/{chatId}:
+    get:
+      tags:
+        - post
+      summary: get a message
+      description: get a message
+      operationId: getMessage
+      parameters:
+        - name: chatId
+          in: path
+          description: ID of chat
+          required: true
+          schema:
+            type: string
+        - name: offset
+          in: query
+          description: start message
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: message number to show
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedMessage'
+        '404':
+          description: chat is not found
 components:
   schemas:
-    Message:
+    CreatedUser:
       type: object
       properties:
         id:
           type: integer
           format: int64
-          example: 10
-        fromUserId:
+        name:
           type: string
-        toUserId:
-          type: string
-        content:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-    Post:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        userId:
-          type: integer
-          format: int64
-          example: 198772
-        content:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-        mediaFileId:
-          type: string
-      Profile:
-        type: object
-        properties:
-          id:
-            type: integer
-            format: int64
-            example: 10
-          userId:
-            type: integer
-            format: int64
-            example: 198772
-          sex:
-            type: string
-          habbits:
-            type: string
-          createdAt:
-            type: string
-            format: date-time
-          lastLoggedIn:
-            type: string
-            format: date-time
-          likes:
-            type: integer
-            format: int64
-          dislikes:
-            type: integer
-            format: int64
-          friends:
-            type: integer
-            format: int64
-          status:
-            type: string
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        username:
-          type: string
-          example: theUser
         firstName:
           type: string
-          example: John
         lastName:
           type: string
-          example: James
-        email:
+        city:
           type: string
-          example: john@email.com
-        password:
-          type: string
-          example: '12345'
-        phone:
-          type: string
-          example: '12345'
-        userStatus:
+        created_at:
           type: integer
-          description: User Status
-          format: int32
-          example: 1
-  securitySchemes:
-    petstore_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
-          scopes:
-            write:pets: modify pets in your account
-            read:pets: read your pets
-    api_key:
-      type: apiKey
-      name: api_key
-      in: header
+          format: timestamp
+        photo_url:
+          type: string
+    NewUser:
+      type: object
+      properties:
+        name:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        city:
+          type: string
+        photo:
+          type: string
+          format: byte
+    NewPost:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int64
+        description:
+          type: string
+        media:
+          type: string
+          format: byte
+        likes:
+          type: integer
+        dislikes:
+          type: integer
+        hashtags:
+          type: string
+        watched_times:
+          type: integer
+    CreatedPost:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user_id:
+          type: integer
+          format: int64
+        description:
+          type: string
+        media_url:
+          type: string
+        likes:
+          type: integer
+        dislikes:
+          type: integer
+        hashtags:
+          type: string
+        watched_times:
+          type: integer
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatedComment'
+    NewComment:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int64
+        post_id:
+          type: integer
+          format: int64
+        description:
+          type: string
+    CreatedComment:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user_id:
+          type: integer
+          format: int64
+        post_id:
+          type: integer
+          format: int64
+        description:
+          type: string
+        created_at:
+          type: integer
+          format: timestamp
+    NewMessage:
+      type: object
+      properties:
+        from_user_id:
+          type: integer
+          format: int64
+        to_user_id:
+          type: integer
+          format: int64
+        message:
+          type: string
+    CreatedMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        chat_id:
+          type: integer
+          format: int64
+        text:
+          type: string
+        read_cnt:
+          type: integer
+          format: int64
