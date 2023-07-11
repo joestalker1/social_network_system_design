@@ -1,0 +1,28 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+Container(loadBalancer, "Load Balancer", "", "Uses round robin")
+Container(mainSystem, "Main system", "Software system", "Processes posts,comments,chats and creating new user's relationships")
+ContainerQueue(messageQueue, "Message queue", "Kafka", "")
+
+System_Boundary(notificationSystem, "Notification system") {
+    Container(cdn, "CDN", "Stores images, videos")
+    Container(chatCache, "Chat cache", "Stores chat information:[user_id1:message list,user_id2,message list...]")
+    Container(chatNotificationService, "Chat notification Service", "", "Sends new messages to online users with long polling")
+    Container(postCommentCache, "Post,comment cache", "Stores chat message information:[user_id1->user_id2:message list,user_id2->user_id3,message list...]")
+    Container(postNotificationService, "Post notification Service", "", "Sends new posts and comments to online users with long polling")
+
+}
+
+BiRel(loadBalancer, mainSystem, "Publishes new posts,chats with users,adds friends, lovers")
+BiRel(loadBalancer, notificationSystem,"Gets new posts,comments,chat messages")
+BiRel(user, loadBalancer, "")
+
+BiRel(mainSystem, messageQueue, "Publishes new posts,messages to online users")
+BiRel(chatNotificationService, messageQueue, "Gets chat messages")
+BiRel(chatCache,chatNotificationService,"")
+BiRel(postNotificationService, messageQueue, "Gets posts,comments")
+BiRel(postCommentCache, postNotificationService,"")
+BiRel(cdn, postNotificationService,"")
+@enduml

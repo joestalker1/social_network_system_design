@@ -1,102 +1,86 @@
 // Use DBML to define your database structure
 // Docs: https://dbml.dbdiagram.io/docs
-// master-slave replication, user.id sync-async,3 replicas
-// master-slave replication, post.id,created_at sync-async,3 replicas
-// master-slave replication, message.id,async created_at,3 replicas
-Table follows {
-  following_user_id integer
-  followed_user_id integer
-  created_at timestamp
-}
+// user: master-slave replication,3 replication factor, sync-async, sharded by id
+// follow: master-slave replication, 3 replication factor, sync-async, sharded by followee_id
+// hobby: master-slave, 3 replication factor, sync-async, shared by user_id
+// post: master-slave, 3 replication factor, sync-async, sharded by user_id
+// comment: master-slave, 3 replication factor, sync-async, sharded by post_id
+// chat: master-slave, 3 replication factor, sync-async, sharded by from_user,to_user
+// message: master-slave, 3 replication factor, sync-async, sharded by chat_id
+// media: master-slave, 3 replication factor, sync-async, sharded by id
 
-Table users {
+
+Table user {
   id integer [primary key]
-  login varch
-  status integer
-  last_login timestamp
+  name varchar
+  media_id integer
   firstname varchar
+  lastname varchar
   created_at timestamp
-  profile_id integer
+  city varchar
 }
 
-Table profiles {
+Table follow {
+  followee_id integer
+  follower_id integer
+  follow_type int
+}
+
+Table hobby {
    id integer [primary key]
    user_id integer
-   address_id integer
-   habbits varchar
-   sex varchar
-   age integer
-   email varch
-   phone varch
-   followers integer
-   friends integer
+   name varchar
 }
 
-Table address {
-   id integer [primary key]
-   city varchar
-   state varch
-   streetAddress varch
-}
-
-Table posts {
+Table post {
   id integer [primary key]
-  title varchar
-  body text [note: 'Content of the post']
   user_id integer
-  status varchar
   created_at timestamp
+  description varchar
+  media_id integer
   likes integer
   dislikes integer
+  hashtags varchar
+  watched_times integer
 }
 
-Table comments {
-   id integer [primary key]
-   text varchar
-   post_id integer
-}
-
-Table messages {
+Table comment {
    id integer [primary key]
    user_id integer
-   to_user_id integer
+   post_id integer
+   description varchar
    created_at timestamp
-   text string
-   read integer
-   delivered integer
+}
+
+Table chat {
+   id integer [primary key]
+   from_user integer
+   to_user integer
+   message_id integer
+   created_at timestamp
+}
+
+Table message {
+   id integer [primary key]
+   chat_id integer
+   text varchar
+   read boolean
 }
 
 Table media {
   id integer [primary key]
-  name varchar
-  type varchar
-  link varchar
-  post_id integer
+  file_url varchar
+  created_at timestamp
+  media_type int
 }
 
-Table post_hashtag {
-   post_id integer
-   hashtag_id integer
-}
-
-Table hashtags {
-   id integer [primary key]
-   name varchar
-}
-Table relationships {
-   user_id1 integer
-   user_id2 integer
-   type integer
-}
-
-Ref: comments.post_id > posts.id
-Ref: media.post_id < posts.id
-Ref: posts.id > post_hashtag.post_id
-Ref: hashtags.id > post_hashtag.hashtag_id
-Ref: profiles.address_id > address.id
-
-Ref: posts.user_id > users.id // many-to-one
-
-Ref: users.id < follows.following_user_id
-
-Ref: users.id < follows.followed_user_id
+Ref: chat.message_id < message.chat_id
+Ref: hobby.user_id > user.id
+Ref: user.media_id - media.id
+Ref: follow.followee_id - user.id
+Ref: follow.follower_id - user.id
+Ref: comment.post_id > post.id
+Ref: chat.from_user - user.id
+Ref: chat.to_user - user.id
+Ref: post.media_id - media.id
+Ref: post.user_id > user.id

@@ -1,0 +1,13 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+Container(mainSystem, "Main system", "Software system", "Processes posts,comments,chats and creating new user's relationships")
+Container(notificationSystem, "Notification system", "Software system", "Notifies online clients about new posts, messages")
+ContainerQueue(messageQueue, "Message queue", "Kafka", "")
+
+BiRel(user, mainSystem, "Publishes new posts,chats with users,adds friends, lovers.")
+BiRel(user, notificationSystem, "Gets new posts, messages for online users")
+BiRel(mainSystem, messageQueue, "Send new posts,messages to online users")
+BiRel(notificationSystem,messageQueue, "Gets new posts,messages to online users")
+@enduml
