@@ -75,3 +75,4 @@
  - Assume SSD speed(writing) is 300 MB/s and it needs to support the 230 GB/s, 
    we need to get about 1149 SSD with replication factor 3.
 
+
